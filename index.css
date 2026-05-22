@@ -1,0 +1,172 @@
+#bgv
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100vw;
+    max-width: 100vw;
+    min-height: 100vh;
+    max-height: 100vh;
+    z-index: -1;
+    object-fit: cover;
+}
+
+
+
+body
+{
+    box-sizing: border-box;
+    margin: 0px;
+}
+
+h1
+{
+    font-family: "Changa One", sans serif;
+    font-size: 128px;
+    font-weight: 400;
+    color: rgb(255, 255, 255);
+    margin-top: 0px;
+}
+
+#Create
+{
+    background-color: transparent;
+    border: none;
+    color: rgb(198, 198, 198);
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 42px;
+    font-weight: 600;
+    padding: 10px 10px;
+}
+
+#Create:hover
+{
+    scale: 1.01;
+    color: whitesmoke;
+    cursor: pointer;
+}
+
+#Join:hover
+{
+    scale: 1.01;
+    color: whitesmoke;
+    cursor: pointer;
+}
+
+#Join
+{
+    background-color: transparent;
+    border: none;
+    color: rgb(198, 198, 198);
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 42px;
+    font-weight: 600;
+    padding: 10px 10px;
+}
+
+#div
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-height: 100vh;
+    max-height: 100vh;
+    min-width: 50vw;
+    max-width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+@media (orientation: portrait) 
+{
+    #div
+    {   
+        min-width: 100vw;
+    }
+}
+
+#dialog
+{
+    z-index: 999;
+    position: absolute;
+    max-width: 80vw;
+    max-height: 80vh;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    background-color: transparent;
+    backdrop-filter: blur(8px);
+    border: 1px solid whitesmoke;
+    padding: 30px 30px;
+    border-radius: 20px;
+}
+
+#dialog.none
+{
+    display: none;
+}
+
+#Enter
+{
+    text-align: center;
+    color: whitesmoke;
+    font-family: "Changa One", sans serif;
+    padding: 10px 10px;
+    margin-top: 0px;
+    margin-bottom: 10px;
+    font-size: 36px;
+}
+
+input
+{
+    background-color: rgba(0, 0, 0, 0.184);
+    margin: 10px;
+    border: 0px;
+    padding: 10px 10px;
+    min-width: 30vw;
+    border-radius: 20px;
+    color: whitesmoke;
+    font-size: 16px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+#RoomID.create
+{
+    display : none;
+}
+
+button
+{
+    padding: 10px 30px;
+    background-color: black;
+    color: whitesmoke;
+    border: none;
+    font-family: "Changa One", sans-serif;
+    font-size: 20px;
+    border-radius: 20px;
+}
+
+button:hover
+{
+    border: 1px solid whitesmoke;
+    background-color: rgb(30, 30, 30);
+    cursor: pointer;
+}
+
+#buttons
+{
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 30px;
+}
+
+*
+{
+    box-sizing: border-box;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}

@@ -4,10 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bluff</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Changa+One:ital@0;1&display=swap" rel="stylesheet">
 </head>
 <body>
-    <button id = "Create">Create Room</button>
-    <button id = "Join">Join Room</button>
+    <video autoplay muted loop id="bgv">
+        <source src="I_am_designing_a_site_for_card.mp4" type="video/mp4">
+    </video>
+    <div id="div">
+        <h1>Bluff</h1>
+        <button id = "Create">Create Room</button>
+        <button id = "Join">Join Room</button>
+    </div>
 </body>
-<script src = "index.js"></script>
+
+    <dialog id="dialog" class="none">
+        <span id="Enter">Enter Room ID</span>
+        <input type="text" placeholder="Name" id="name" autocomplete="additional-name">
+        <input type="text" placeholder="Enter Room ID" id="RoomID">
+        <div id="buttons">
+            <button id = "Cancel">Cancel</button>
+            <button id = "Join-Room">Continue</button>
+        </div>
+    </dialog>
+<script type="module" src = "index.js"></script>
 </html>

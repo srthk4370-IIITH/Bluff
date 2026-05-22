@@ -1,8 +1,23 @@
 const create = document.getElementById("Create")
 const join = document.getElementById("Join")
+const name = document.getElementById("name")
+const room = document.getElementById("RoomID")
+const cancel = document.getElementById("Cancel")
+const cont = document.getElementById("Join-Room")
+const dialog = document.getElementById("dialog")
 const baseURL = "http://localhost:8000"
 let uid = sessionStorage.getItem("uid")
-const close = new CloseWatcher()
+let c = false
+let reload = true;
+
+if(uid == null || uid == "")
+    await getUID();
+
+if(sessionStorage.getItem("roomid") != null)
+{
+    window.location.href = "/room"
+}
+
 
 async function getUID()
 {
@@ -18,53 +33,84 @@ async function getUID()
     console.log(uid)
 }
 
-create.addEventListener("click", async () => {
-    let data = await fetch(baseURL+"/create",{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json"
-        }
-    })
-    data = await data.json()
-    ri = data.roomid
-    sessionStorage.setItem("roomid", ri)
-    window.location.href = "/room/"
+cancel.addEventListener("click", () => {
+    dialog.classList.add("none")
+    room.classList.remove("create")
 })
 
-join.addEventListener("click", async () => {
-    let ri = prompt("Enter Room ID")
-    let data = await fetch(baseURL+"/join/"+ri,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json"
-        }
-    })
-    data =  await data.json()
-    console.log(data)
-    if(data.join)
+cont.addEventListener("click", async () => {
+    let n = name.value;
+    let ri = room.value;
+    console.log(ri)
+    if(c)
     {
-        sessionStorage.setItem("roomid", ri)
-        window.location.href = "/room/"
+        if(n.length > 0)
+        {
+            sessionStorage.setItem("name", n)
+            let data = await fetch(baseURL+"/create",{
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            data = await data.json()
+            console.log(data)
+            ri = data.roomid
+            dialog.classList.add("none")
+            room.classList.remove("create")
+            sessionStorage.setItem("roomid", ri)
+            sessionStorage.setItem("name", n)
+            reload = false;
+            window.location.href = "/room"
+        }
+    }
+    else
+    {
+        if(n.length > 0 && ri > 0)
+        {
+            let data = await fetch(baseURL+"/join/"+ri,{
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            data =  await data.json()
+            console.log(data)
+            if(data.join)
+            {
+                dialog.classList.add("none")
+                room.classList.remove("create")
+                sessionStorage.setItem("roomid", ri)
+                sessionStorage.setItem("name", n)
+                reload = false
+                window.location.href = "/room";
+            }
+        }
     }
 })
 
-if(uid == null)
-    getUID();
+create.addEventListener("click", () => {
+    c = true;
+    dialog.classList.remove("none")
+    room.classList.add("create")
+})
 
-if(sessionStorage.getItem("roomid") != null)
-{
-    windowURL = "/room"
-    const o = window.open(windowURL, "_blank")
-    if(!o)
-        window.location.href = windowURL
-}
+join.addEventListener("click", () => {
+    c = false
+    dialog.classList.remove("none")
+})
+
+
 
 window.addEventListener("beforeunload", async () => {
-    let d = await fetch(baseURL+"/logout/"+uid, {
-        method: "POST",
-        headers: {
-            "Content-Type" : "application/json"
-        },
-        keepalive: true
-    })
+    if(reload)
+    {
+        let d = await fetch(baseURL+"/logout/"+uid, {
+            method: "POST",
+            headers: {
+                "Content-Type" : "application/json"
+            },
+            keepalive: true
+        })
+    }
 })

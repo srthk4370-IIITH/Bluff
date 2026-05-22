@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from fastapi.responses import JSONResponse
 import random, json
 from threading import Timer
+import asyncio
 
 app = FastAPI()
 
@@ -65,7 +66,7 @@ class GameRoom:
                         self.lastMove = cards
                         self.lastClaim = claim
                         self.lastMoveP = 0
-                        return {"status": True, "empty": False, "claim": claim}
+                        return {"status": True, "empty": False, "claim": claim, "New Round": False}
                     else:
                         return {"status": False, "detail": "Wrong Cards"}
                 else:
@@ -83,6 +84,7 @@ class GameRoom:
         
     async def object(self, uid):
         if self.inGame:
+            self.canObject = True
             c = 0
             for card in self.lastMove:
                 if card[1] == self.lastClaim[1]: 
@@ -99,20 +101,29 @@ class GameRoom:
     def append(self, uid, cards : list):
         self.players.get(uid).append(cards)
         
-    def nextPlayer(self):
+    async def nextPlayer(self, time):
+        self.canObject = False
+        if time != 0:
+            await asyncio.sleep(time)
         a = None
         b = False
         for uid in self.order:
+            print(uid, b)
             if uid == self.currP:
                 b = True
+                continue
             if b:
                 a = uid
+                break
         if a is None:
             a = self.order[0]
         self.currP = a
-        return a
+        await rm.broadcast(self.roomid, {"action":"nextTurn", "uid": a, "nextRound": False})
 
-    def nextRound(self):
+    async def nextRound(self, time):
+        self.canObject = False
+        if time != 0:
+            await asyncio.sleep(time)
         self.currentStack = []
         self.lastMove = []
         self.lastClaim = None
@@ -121,18 +132,22 @@ class GameRoom:
         for uid in self.order:
             if uid == self.startingP:
                 b = True
+                continue
             if b:
                 a = uid
+                break
         if a is None:
             a = self.order[0]
         self.startingP = a
+        self.currP = a
+        await rm.broadcast(self.roomid, {"action":"nextTurn", "uid": a, "nextRound": True})
 
     async def startPlay(self):
         if len(self.order) > 1:
             self.inGame = True
             self.currP = self.order[0]
-            self.startingP = self.currP
             await self.give()
+            await self.nextRound(0)
             return True
         else:
             return False
@@ -163,24 +178,27 @@ class RoomManager:
                 room.players.pop(uid)
             room.players[uid] = p
             room.order.append(uid)
-            print(room.players)
+            print(room.order)
             msg = [{"id":x, "name":y.name} for x,y in room.players.items()]
             await self.broadcast(roomid, {"players": str(json.dumps(msg)), "action": "connection", "master": room.order[0]})
         else:
             await websocket.send_json({"action": "Not-Join", "detail": "In-game"})
 
-    def disconnect(self, uid, roomid):
+    async def disconnect(self, uid, roomid): #TODO: Rewrite
         global rooms
         room = self.games.get(roomid)
-        if uid in room.players:
+        if room.players.get(uid) != None:
             room.players.pop(uid)
             l = []
             for p in room.order:
                 if p == uid:
                     continue
                 l.append(p)
-            room.order = l 
-        if not bool(room.players):
+            room.order = l
+            if len(room.order) > 0:
+                msg = [{"id":x, "name":y.name} for x,y in room.players.items()]
+                await self.broadcast(roomid, {"players": str(json.dumps(msg)), "action": "connection", "master": room.order[0]})
+        if len(room.players.values()) == 0:
             self.games.pop(roomid)
             r = []
             for x in rooms:
@@ -200,7 +218,7 @@ class RoomManager:
             try:
                 await self.sendMsg(roomid, uid, msg)
             except Exception:
-                self.disconnect(roomid, uid)
+                await self.disconnect(roomid, uid)
 
     def move(self, roomid, uid, cards, claim):
         return self.games.get(roomid).move(cards, claim, uid)
@@ -220,22 +238,38 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
                 c = []
                 for x in data.get("cards"):
                     c.append((x[0], x[1]))
+                if c == []:
+                    c = None
                 claim = (data.get("claim")[0], data.get("claim")[1])
                 res = rm.move(roomid, uid, c, claim)
                 if res.get("status"):
                     await rm.broadcast(roomid, {"action": "moved", "uid": uid, "empty":res.get("empty"), "claim": res.get("claim")})
+                    room = rm.games.get(roomid)
+                    time = 0.5
+                    if not res.get("empty"):
+                        room.canObject = True   
+                        await rm.broadcast(roomid, {"action": "object?", "claim": claim})
+                        time = 3.0
+                    if res.get("New Round"):
+                        t = asyncio.create_task(room.nextRound(time))
+                        await t
+                    else:
+                        t = asyncio.create_task(room.nextPlayer(time))
+                        await t
                 else:
                     await rm.sendMsg(roomid, uid, {"action": "notYourMove", "detail": res.get("detail")})
                 #TODO: Return Response Based on Res
             elif action == "object":
-                await rm.games.get(roomid).object(uid)
+                room = rm.games.get(roomid)
+                if room.canObject:
+                    await room.object(uid)
             elif action == "play":
                 if not await rm.games.get(roomid).startPlay():
                     await websocket.send_json({"action": "error", "detail": "Too less people"})
     except WebSocketDisconnect:
         pass
     finally:
-        rm.disconnect(uid, roomid)
+        await rm.disconnect(uid, roomid)
 
 
 @app.get("/create")
