@@ -193,7 +193,7 @@ button
 {
     flex: 7;
     z-index: 1;
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(5px);
     height: 100%;
     border-radius: 50px;
@@ -202,6 +202,7 @@ button
     display: flex;
     flex-wrap: wrap;
     overflow-y: auto;
+    border: 1px solid rgb(255, 255, 255);
 }
 
 #players
@@ -220,8 +221,11 @@ button
     flex: 6;
     display: flex;
     padding: 20px 20px;
-    margin: 10px;
+    margin: 15px;
     flex-wrap: wrap;
+    border: 1px solid white;
+    border-radius: 50px;
+    background-color: rgba(0, 0, 0, 0.305);
 }
 
 .pcard
@@ -279,6 +283,53 @@ button
 }
 
 
+#info
+{
+    font-family: "Changa One";
+}
+
+#butt
+{
+    padding: 10px;
+}
+
+#info
+{
+    text-align: center;
+}
+ 
+select
+{
+    display: block;
+    margin: 10px auto;
+    padding: 10px 25px;
+    border-radius: 20px;
+    font-family: "Changa One";
+    background-color: black;
+    border: 1px solid white;
+    color: white;
+}
+
+#move, #object
+{
+    display: block;
+    margin: 10px auto;
+}
+
+#move:hover, #object:hover
+{
+    background-color: gray;
+    cursor: pointer;
+    border: 1px solid white;
+}
+
+#move:active, #object:active
+{
+    background-color: rgba(255, 255, 255, 0.173);
+}
+
+
+
 @media (orientation: portrait) {
     #wrapper
     {
@@ -299,8 +350,130 @@ button
 
 .cards.selected
 {
-    border: 1px solid rgb(225, 199, 56);
+    border: 2px solid rgb(225, 199, 56);
+    scale: 1.001;
+    box-shadow: 0px 0px 1px 2px black;
 }
+
+#winner-wrapper
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+}
+
+#winner
+{
+    box-sizing: border-box;
+    flex : 1;
+    padding: 3vh 3vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: space-around;
+    backdrop-filter: blur(10px);
+    margin: 10px;
+}
+
+#crown
+{
+    height: max(15vh, 15vw);
+    margin: 10px auto;
+}
+
+#winnerName
+{
+    font-family: "Changa One";
+    font-size: 72px;
+    text-align: center;
+    color: white;
+}
+
+#winner-list
+{
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.632);
+    margin: 10px;
+    border-radius: 20px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: "Changa One";
+    font-size: 32px;
+    padding: 15px;
+}
+
+ul
+{
+    margin: 10px;
+    width: 100%;
+}
+
+li
+{
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    font-size: 24px;
+    border-top: 1px solid white;
+    border-bottom: 1px solid white;
+}
+
+.pos
+{
+    margin-right: 10%;
+    font-size: 32px;
+}
+
+li:hover
+{
+    scale: 1.01;
+    #pos
+    {
+        color: rgb(225, 209, 31)
+    }
+}
+
+#leave2
+{
+    background-color: rgba(255, 0, 0, 0);
+    backdrop-filter: blur(20px);
+    color: white;
+    border: 1px solid white;
+}
+
+#leave2:hover
+{
+    background-color: rgba(255, 0, 0, 0.505);
+    border-color: red;
+    cursor: pointer;
+}
+
+#leave2:active
+{
+    background-color: red;
+}
+
+#Rematch:hover
+{
+    background-color: rgb(175, 175, 175);
+    cursor: pointer;
+    border: 1px solid rgb(255, 255, 255);
+}
+
+#Rematch:active
+{
+    background-color: rgb(52, 51, 51);
+    color: white;
+    border: 1px solid rgb(52, 51, 51);
+}
+
 
 #wrapper
 {
@@ -308,6 +481,11 @@ button
 }
 
 #game-wrapper
+{
+    display: none;
+}
+
+#winner-wrapper
 {
     display: none;
 }

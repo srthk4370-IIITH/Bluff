@@ -33,8 +33,9 @@ class Player:
         self.ws = websocket
         self.cards = [] 
 
-    def append(self, cards : list):
-        self.card.extend(cards)
+    async def append(self, cards : list):
+        self.cards.extend(cards)
+        await self.ws.send_json({"action": "takeCards", "cards": self.cards})
     
     def move(self, cards: list):
         if set(cards).issubset(set(self.cards)):
@@ -55,7 +56,9 @@ class GameRoom:
         self.lastMoveP : int = None
         self.startingP : int = None
         self.canObject : bool = False
+        self.objected : bool = False
         self.inGame : bool = False
+        self.winners : list = []
 
     def move(self, cards, claim, uid):
         if self.inGame:
@@ -71,7 +74,6 @@ class GameRoom:
                         return {"status": False, "detail": "Wrong Cards"}
                 else:
                     self.lastMove = []
-                    self.lastClaim = None
                     self.lastMoveP += 1
                     if self.lastMoveP == len(self.order)+1:
                         return {"status": True, "New Round": True, "empty": True}
@@ -84,27 +86,30 @@ class GameRoom:
         
     async def object(self, uid):
         if self.inGame:
-            self.canObject = True
             c = 0
             for card in self.lastMove:
                 if card[1] == self.lastClaim[1]: 
                     c += 1
             if c == self.lastClaim[0]:
-                self.append(uid, self.currentStack)
+                await self.append(uid, self.currentStack)
                 await rm.broadcast(self.roomid, {"action": "Object", "judge": "Lost", "detail": f"{self.players.get(uid).name} lost the judgement. New Round begins"})
             else:
-                self.append(self.currP, self.currentStack)
+                await self.append(self.currP, self.currentStack)
                 await rm.broadcast(self.roomid, {"action": "Object", "judge": "Won", "detail": f"{self.players.get(self.currP).name} lost the judgement. New Round begins"})
+            await self.nextRound(3)
         else:
             await rm.sendMsg(self.roomid, uid, {"action": "error", "detail": "Not In Game"})
 
-    def append(self, uid, cards : list):
-        self.players.get(uid).append(cards)
+    async def append(self, uid, cards : list):
+        await self.players.get(uid).append(cards)
         
     async def nextPlayer(self, time):
-        self.canObject = False
         if time != 0:
             await asyncio.sleep(time)
+        if self.objected and time > 4:
+            self.objected = False
+            return True
+        self.canObject = False
         a = None
         b = False
         for uid in self.order:
@@ -118,12 +123,20 @@ class GameRoom:
         if a is None:
             a = self.order[0]
         self.currP = a
-        await rm.broadcast(self.roomid, {"action":"nextTurn", "uid": a, "nextRound": False})
+        await self.winner()
+        if(len(self.order) == 1): 
+            self.winners.append(self.players.get(self.order[0]).name)
+            await rm.broadcast(self.roomid, {"action":"done", "winners" : self.winners});
+            return True
+        await rm.broadcast(self.roomid, {"action":"nextTurn", "uid": a, "nextRound": False, "card": self.lastClaim[1], "name": self.players.get(a).name})
 
     async def nextRound(self, time):
-        self.canObject = False
         if time != 0:
             await asyncio.sleep(time)
+        if self.objected and time > 4:
+            self.objected = False
+            return True
+        self.canObject = False
         self.currentStack = []
         self.lastMove = []
         self.lastClaim = None
@@ -140,7 +153,13 @@ class GameRoom:
             a = self.order[0]
         self.startingP = a
         self.currP = a
-        await rm.broadcast(self.roomid, {"action":"nextTurn", "uid": a, "nextRound": True})
+        await self.winner()
+        if(len(self.order) == 1): 
+            self.winners.append(self.players.get(self.order[0]).name)
+            await rm.broadcast(self.roomid, {"action":"done", "winners" : self.winners});
+            return True
+        
+        await rm.broadcast(self.roomid, {"action":"nextTurn", "uid": a, "nextRound": True, "name": self.players.get(a).name})
 
     async def startPlay(self):
         if len(self.order) > 1:
@@ -160,6 +179,18 @@ class GameRoom:
             p.cards = t[:2] #TODO: Give correct no. of cards
             await rm.sendMsg(self.roomid, p.uid, {"action": "takeCards", "cards": p.cards})
             t = t[2:]
+
+    async def winner(self):
+        l = []
+        for uid in self.order:
+            pl = self.players.get(uid)
+            if pl is not None and len(pl.cards) == 0:
+                await rm.broadcast(self.roomid, {"action": "winner", "name": pl.name})
+                self.winners.append(pl.name)
+                continue
+            l.append(uid)
+        self.order = l
+    
 
 
 
@@ -184,7 +215,7 @@ class RoomManager:
         else:
             await websocket.send_json({"action": "Not-Join", "detail": "In-game"})
 
-    async def disconnect(self, uid, roomid): #TODO: Rewrite
+    async def disconnect(self, uid, roomid):
         global rooms
         room = self.games.get(roomid)
         if room.players.get(uid) != None:
@@ -195,7 +226,7 @@ class RoomManager:
                     continue
                 l.append(p)
             room.order = l
-            if len(room.order) > 0:
+            if len(room.players.values()) > 0:
                 msg = [{"id":x, "name":y.name} for x,y in room.players.items()]
                 await self.broadcast(roomid, {"players": str(json.dumps(msg)), "action": "connection", "master": room.order[0]})
         if len(room.players.values()) == 0:
@@ -213,12 +244,12 @@ class RoomManager:
           await ws.send_json(msg)
 
     async def broadcast(self, roomid, msg):
-        l = self.games.get(roomid).order
-        for uid in l:
+        l = self.games.get(roomid).players.values()
+        for p in l:
             try:
-                await self.sendMsg(roomid, uid, msg)
+                await p.ws.send_json(msg)
             except Exception:
-                await self.disconnect(roomid, uid)
+                await self.disconnect(roomid, p.uid)
 
     def move(self, roomid, uid, cards, claim):
         return self.games.get(roomid).move(cards, claim, uid)
@@ -228,7 +259,7 @@ rm = RoomManager()
 @app.websocket("/ws/{roomid}/{uid}/{name}")
 async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : int):
     await rm.connect(uid, roomid, name+"#"+str(uid), websocket)
-
+    t = None
     try:
         while True:
             data = await websocket.receive_json()
@@ -242,6 +273,7 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
                     c = None
                 claim = (data.get("claim")[0], data.get("claim")[1])
                 res = rm.move(roomid, uid, c, claim)
+                print(res)
                 if res.get("status"):
                     await rm.broadcast(roomid, {"action": "moved", "uid": uid, "empty":res.get("empty"), "claim": res.get("claim")})
                     room = rm.games.get(roomid)
@@ -249,7 +281,7 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
                     if not res.get("empty"):
                         room.canObject = True   
                         await rm.broadcast(roomid, {"action": "object?", "claim": claim})
-                        time = 3.0
+                        time = 5.0
                     if res.get("New Round"):
                         t = asyncio.create_task(room.nextRound(time))
                         await t
@@ -262,7 +294,9 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
             elif action == "object":
                 room = rm.games.get(roomid)
                 if room.canObject:
+                    room.objected = True
                     await room.object(uid)
+                    t = None
             elif action == "play":
                 if not await rm.games.get(roomid).startPlay():
                     await websocket.send_json({"action": "error", "detail": "Too less people"})

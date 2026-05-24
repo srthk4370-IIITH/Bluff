@@ -8,15 +8,23 @@ const Leave = document.getElementById("Leave")
 const right = document.getElementById("right")
 const board = document.getElementById("board")
 const pShow = document.getElementById("playerShow")
+const move = document.getElementById("move")
+const object = document.getElementById("object")
+const claim = document.getElementById("claim")
+const info = document.getElementById("info")
+const leave1 = document.getElementById("leave1")
 let ws;
 let cards = [];
 let canMove = false;
-let newR = false;
+claim.disabled = true;
 let sel = []
 if(roomid == null || uid == null || name == null)
 {
     window.location.href = "/";
 }
+
+move.disabled = true
+object.disabled = true
 
 async function connect()
 {
@@ -106,9 +114,10 @@ async function connect()
                 document.getElementById("name1").innerText = "NAME : "+name
                 document.getElementById("wrapper").style.display = "none";
                 document.getElementById("game-wrapper").style.display = "flex";
-                Newcards = msg.cards
-                cards.push(...Newcards)
+                //Newcards = msg.cards
+                //cards.push(...Newcards)
                 board.innerHTML = ""
+                cards = msg.cards
                 cards.forEach(card => {
                     i = document.createElement("img")
                     i.src = `cards/${card[0]}/${card[1]}.svg`
@@ -121,11 +130,59 @@ async function connect()
             }
             else if(msg.action == "nextTurn")
             {
+                info.innerText = `CURRENT PLAYER : ${msg.name}`
                 if(msg.uid == uid)
                 {
                     canMove = true
-                    newR = msg.nextRound
+                    move.disabled = false
+                    if(msg.nextRound)
+                    {
+                        claim.disabled = false;
+                        claim.selected = claim.options[0]
+                    }
+                    else
+                    {
+                        claim.value = msg.card
+                    }
                 }
+            }
+            else if(msg.action == "object?")
+            {
+                object.disabled = false;
+                setTimeout(() => {object.disabled = true;}, 3000)
+            }
+            else if(msg.action == "Object")
+            {
+                info.innerText = msg.detail
+            }
+            else if(msg.action == "winner") //TODO: Display Winner As They Come
+            {
+                if(msg.name == name)
+                {
+                    console.log("FUCK OFFF")
+                }
+                else
+                {
+                    console.log("LOSER LMAOO")
+                }
+            }
+            else if(msg.action == "done") //Display All the winners
+            {
+                document.getElementById("winner-wrapper").style.display = "flex";
+                document.getElementById("game-wrapper").style.display = "none";
+                document.getElementById("winnerName").innerText = msg.winners[0];
+                ul = document.getElementById("ul");
+                let i = 1
+                ul.innerHTML = ""
+                msg.winners.forEach(win => {
+                    li = document.createElement("li")
+                    span = document.createElement("span")
+                    span.classList.add("pos")
+                    span.innerText = i++;
+                    li.append(span);
+                    li.append(win)
+                    ul.append(li)
+                })
             }
             else
             {
@@ -156,16 +213,44 @@ document.addEventListener("click", (e) => {
         if(c=="cards")
         {
             e.target.classList.add("selected")
-            sel.push([e.target.getAttribute(1), e.target.getAttribute(2)])
+            sel.push([e.target.getAttribute(1), e.target.getAttribute(2), e.target])
             console.log(sel)
         }
         else if(c == "cards selected")
         {
             e.target.classList.remove("selected")
-            sel.splice(sel.indexOf([e.target.getAttribute(1), e.target.getAttribute(2)]), 1)
+            sel.splice(sel.indexOf([e.target.getAttribute(1), e.target.getAttribute(2), e.target]), 1)
             console.log(sel)
         }
     }
+})
+
+move.addEventListener("click", () => {
+    if(canMove && claim.value != "")
+    {
+        sel1 = []
+        sel.forEach(card => {
+            card[2].remove()
+            card = card.slice(0, 2)
+            sel1.push(card)
+        })
+        ws.send(JSON.stringify({"action" : "move", "cards": sel1, "claim": [sel1.length, claim.value]}))
+        sel = []
+        move.disabled= true
+        canMove = false
+        claim.selected = claim.options[0]
+        claim.disabled = true
+    }
+})
+
+object.addEventListener("click", () => {
+    ws.send(JSON.stringify({"action": "object"}))
+})
+
+leave1.addEventListener("click", () => {
+    sessionStorage.removeItem("roomid")
+    sessionStorage.removeItem("name")
+    window.location("/")
 })
 
 connect()
