@@ -118,7 +118,7 @@ async function connect()
                         type[1].innerText = "Look Who Just Played"
                         msgCon[1].innerText = `${msg.name} claims to have ${msg.claim[0]} of ${msg.claim[1]}... looks fishy, no?`
                         objdialog.style.visibility = "visible";
-                        setTimeout(() => {objdialog.style.visibility = "hidden";}, 2500)
+                        setTimeout(() => {objdialog.style.visibility = "hidden";}, 3500)
                     }
                 }
             }
@@ -160,7 +160,7 @@ async function connect()
                         let  t = 0
                         if(msgEmpty)
                         {
-                            t =1000
+                            t =2000
                             msgEmpty = false
                         }
                         setTimeout(() => {
@@ -168,7 +168,7 @@ async function connect()
                         msgCon[0].innerText = "Its your turn.... Ready to deceive? It's a new round beware."
                         }, t);
                         msgggg.style.visibility = "visible"
-                        setTimeout(() => {msgggg.style.visibility = "hidden"}, 2000+t)
+                        setTimeout(() => {msgggg.style.visibility = "hidden"}, 2500+t)
                     }
                     else
                     {
@@ -176,7 +176,7 @@ async function connect()
                         let  t = 0
                         if(msgEmpty)
                         {
-                            t = 1000;
+                            t = 2000;
                             msgEmpty = false;
                         }
                         setTimeout(() => {
@@ -184,7 +184,7 @@ async function connect()
                             msgCon[0].innerText = "Its your turn.... Ready to deceive?"
                         }, t);
                         msgggg.style.visibility = "visible"
-                        setTimeout(() => {msgggg.style.visibility = "hidden"}, 2000+t)
+                        setTimeout(() => {msgggg.style.visibility = "hidden"}, 2500+t)
                     }
                 }
                 else
@@ -216,7 +216,7 @@ async function connect()
             }
             else if(msg.action == "winner") //TODO: Display Winner As They Come
             {
-                if(msg.uid == uid)
+                if(msg.uid != uid)
                 {
                     msgEmpty = true;
                     type[0].innerText = `${msg.name} Won!`
@@ -226,7 +226,7 @@ async function connect()
                 {
                     msgEmpty = true;
                     type[0].innerText = `YOU Won!`
-                    msgCon[0].innerText = `YLessgoo atleast you didn't come last as I expected`
+                    msgCon[0].innerText = `Lessgoo atleast you didn't come last as I expected`
                 }
                 msgggg.style.visibility = "visible"
             }
@@ -255,6 +255,13 @@ async function connect()
                 msgCon[2].innerText = msg.detail
                 err.style.visibility = "visible"
                 setTimeout(() => {err.style.visibility = "hidden"}, 3000)
+                if(msg.detail == "In-game")
+                {
+                    ask = false;
+                    sessionStorage.removeItem("roomid")
+                    sessionStorage.removeItem("name")
+                    setTimeout(() => {window.location = "/"}, 1000);
+                }
             }
         }
         catch

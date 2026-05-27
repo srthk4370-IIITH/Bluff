@@ -308,7 +308,7 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
                     if not res.get("empty"):
                         room.canObject = True   
                         await rm.broadcast(roomid, {"action": "object?", "claim": claim})
-                        time = 5.0
+                        time = 6.0
                     if res.get("New Round"):
                         t = asyncio.create_task(room.nextRound(time))
                         await t

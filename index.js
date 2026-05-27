@@ -5,6 +5,8 @@ const room = document.getElementById("RoomID")
 const cancel = document.getElementById("Cancel")
 const cont = document.getElementById("Join-Room")
 const dialog = document.getElementById("dialog")
+const err = document.getElementById("error")
+const msgCon = document.getElementById("msgCon")
 const baseURL = "http://localhost:8000"
 let uid = sessionStorage.getItem("uid")
 let c = false
@@ -84,6 +86,12 @@ cont.addEventListener("click", async () => {
                 sessionStorage.setItem("name", n)
                 reload = false
                 window.location.href = "/room";
+            }
+            else
+            {
+                msgCon.innerText = "Room doesn't Exist"
+                err.style.visibility = "visible"
+                setTimeout(() => {err.style.visibility = "hidden"}, 3000)
             }
         }
     }
