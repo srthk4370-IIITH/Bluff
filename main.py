@@ -60,7 +60,7 @@ class GameRoom:
         self.inGame : bool = False
         self.winners : list = []
 
-    def move(self, cards, claim, uid):
+    async def move(self, cards, claim, uid):
         if self.inGame:
             if self.currP == uid:
                 if cards is not None:
@@ -278,8 +278,8 @@ class RoomManager:
             except Exception:
                 await self.disconnect(roomid, p.uid)
 
-    def move(self, roomid, uid, cards, claim):
-        return self.games.get(roomid).move(cards, claim, uid)
+    async def move(self, roomid, uid, cards, claim):
+        return await self.games.get(roomid).move(cards, claim, uid)
 
 rm = RoomManager()
 
@@ -299,7 +299,7 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
                 if c == []:
                     c = None
                 claim = (data.get("claim")[0], data.get("claim")[1])
-                res = rm.move(roomid, uid, c, claim)
+                res = await rm.move(roomid, uid, c, claim)
                 print(res)
                 if res.get("status"):
                     await rm.broadcast(roomid, {"action": "moved", "uid": uid, "empty":res.get("empty"), "claim": res.get("claim"), "name": name})

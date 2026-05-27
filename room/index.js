@@ -29,6 +29,7 @@ let canMove = false;
 let newR = false;
 let msgEmpty = false;
 let ask = true;
+let reload = true;
 claim.disabled = true;
 let sel = []
 if(roomid == null || uid == null || name == null)
@@ -345,6 +346,7 @@ leave2.addEventListener("click", () => {
 })
 
 rematch.addEventListener("click", () => {
+    reload = false;
     window.location.reload();
 })
 
@@ -359,6 +361,9 @@ window.addEventListener("beforeunload", (e) => {
     {
         e.preventDefault();
     }
-    sessionStorage.removeItem("roomid")
-    sessionStorage.removeItem("name")
+    if(reload)
+    {
+        sessionStorage.removeItem("roomid")
+        sessionStorage.removeItem("name")
+    }
 })
