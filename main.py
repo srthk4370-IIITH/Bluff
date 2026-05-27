@@ -321,6 +321,7 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
             elif action == "object":
                 room = rm.games.get(roomid)
                 if room.canObject:
+                    room.canObject = False
                     room.objected = True
                     await room.object(uid)
                     t = None
