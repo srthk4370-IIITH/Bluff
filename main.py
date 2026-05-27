@@ -127,6 +127,7 @@ class GameRoom:
         if(len(self.order) == 1): 
             self.winners.append(self.players.get(self.order[0]).name)
             await rm.broadcast(self.roomid, {"action":"done", "winners" : self.winners});
+            self.reset()
             return True
         await rm.broadcast(self.roomid, {"action":"nextTurn", "uid": a, "nextRound": False, "card": self.lastClaim[1], "name": self.players.get(a).name})
 
@@ -157,39 +158,57 @@ class GameRoom:
         if(len(self.order) == 1): 
             self.winners.append(self.players.get(self.order[0]).name)
             await rm.broadcast(self.roomid, {"action":"done", "winners" : self.winners});
+            self.reset()
             return True
         
         await rm.broadcast(self.roomid, {"action":"nextTurn", "uid": a, "nextRound": True, "name": self.players.get(a).name})
 
-    async def startPlay(self):
+    async def startPlay(self, num):
         if len(self.order) > 1:
             self.inGame = True
             self.currP = self.order[0]
-            await self.give()
+            if num == 0: num = 100
+            await self.give(min(num, 52//len(self.order)))
             await self.nextRound(0)
             return True
         else:
             return False
     
-    async def give(self):
+    async def give(self, num):
         global cards
         random.shuffle(cards)
         t = cards.copy()
         for p in self.players.values():
-            p.cards = t[:2] #TODO: Give correct no. of cards
+            p.cards = t[:num] #TODO: Give correct no. of cards
             await rm.sendMsg(self.roomid, p.uid, {"action": "takeCards", "cards": p.cards})
-            t = t[2:]
+            t = t[num:]
 
     async def winner(self):
         l = []
         for uid in self.order:
             pl = self.players.get(uid)
             if pl is not None and len(pl.cards) == 0:
-                await rm.broadcast(self.roomid, {"action": "winner", "name": pl.name})
+                await rm.broadcast(self.roomid, {"action": "winner", "name": pl.name, "uid": pl.uid})
                 self.winners.append(pl.name)
                 continue
             l.append(uid)
         self.order = l
+
+    def reset(self):
+        print("Resetting")
+        self.roomid = self.roomid
+        self.players : dict[int, Player] = {}
+        self.order: list = [] #Store UIDs
+        self.currentStack : list = []
+        self.lastMove : list = []
+        self.lastClaim: tuple = None
+        self.currP : int = None
+        self.lastMoveP : int = None
+        self.startingP : int = None
+        self.canObject = False
+        self.objected = False
+        self.inGame = False
+        self.winners : list = []
     
 
 
@@ -213,22 +232,30 @@ class RoomManager:
             msg = [{"id":x, "name":y.name} for x,y in room.players.items()]
             await self.broadcast(roomid, {"players": str(json.dumps(msg)), "action": "connection", "master": room.order[0]})
         else:
-            await websocket.send_json({"action": "Not-Join", "detail": "In-game"})
+            await websocket.send_json({"action": "error", "detail": "In-game"})
 
     async def disconnect(self, uid, roomid):
         global rooms
         room = self.games.get(roomid)
+        if room == None: return False
         if room.players.get(uid) != None:
             room.players.pop(uid)
             l = []
+            p1 = None
+            prev = None
             for p in room.order:
                 if p == uid:
+                    prev = p1
                     continue
                 l.append(p)
+                p1 = p
             room.order = l
             if len(room.players.values()) > 0:
                 msg = [{"id":x, "name":y.name} for x,y in room.players.items()]
-                await self.broadcast(roomid, {"players": str(json.dumps(msg)), "action": "connection", "master": room.order[0]})
+                await self.broadcast(roomid, {"players": str(json.dumps(msg)), "action": "connection", "master": room.order[0] if len(room.order) > 0 else 0})
+                if room.currP == uid:
+                    room.currP = prev
+                    await room.nextPlayer(0)
         if len(room.players.values()) == 0:
             self.games.pop(roomid)
             r = []
@@ -275,7 +302,7 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
                 res = rm.move(roomid, uid, c, claim)
                 print(res)
                 if res.get("status"):
-                    await rm.broadcast(roomid, {"action": "moved", "uid": uid, "empty":res.get("empty"), "claim": res.get("claim")})
+                    await rm.broadcast(roomid, {"action": "moved", "uid": uid, "empty":res.get("empty"), "claim": res.get("claim"), "name": name})
                     room = rm.games.get(roomid)
                     time = 0.5
                     if not res.get("empty"):
@@ -289,7 +316,7 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
                         t = asyncio.create_task(room.nextPlayer(time))
                         await t
                 else:
-                    await rm.sendMsg(roomid, uid, {"action": "notYourMove", "detail": res.get("detail")})
+                    await rm.sendMsg(roomid, uid, {"action": "error", "detail": res.get("detail")})
                 #TODO: Return Response Based on Res
             elif action == "object":
                 room = rm.games.get(roomid)
@@ -298,8 +325,8 @@ async def RoomConnection(websocket: WebSocket, uid : int, name : str, roomid : i
                     await room.object(uid)
                     t = None
             elif action == "play":
-                if not await rm.games.get(roomid).startPlay():
-                    await websocket.send_json({"action": "error", "detail": "Too less people"})
+                if not await rm.games.get(roomid).startPlay(int(data.get("no"))):
+                    await websocket.send_json({"action": "error", "detail": "There should be atleast 2 people to play the game."})
     except WebSocketDisconnect:
         pass
     finally:

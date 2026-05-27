@@ -1,87 +1,110 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Room</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Changa+One:ital@0;1&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-</head>
-<body>
-    <image src = "../Gemini_Generated_Image_hqhsxghqhsxghqhs.png" id="bgi"></image>
-    <div id = "wrapper">
-        <div class="left">
-            <p id="title">BLUFF</p><br>
-            <p id="room">ROOMID : xxxx</p><br>
-            <p id="Name">NAME : abcd#xxx</p><br>
-            <div id = "buttons">
-                <button id="Start">Start game</button>
-                <button id="Leave">Leave Room</button>
-            </div>
+    <link rel="stylesheet" href="index.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Changa+One:ital@0;1&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <image
+      src="../Gemini_Generated_Image_hqhsxghqhsxghqhs.png"
+      id="bgi"
+    ></image>
+    <div id="wrapper">
+      <div class="left">
+        <p id="title">BLUFF</p>
+        <br />
+        <p id="room">ROOMID : xxxx</p>
+        <br />
+        <p id="Name">NAME : abcd#xxx</p>
+        <br />
+        <div id="buttons">
+          <button id="Start">Start game</button>
+          <button id="Leave">Leave Room</button>
+          <div id="noc">No. of cards : <input type="number" placeholder=0 id="nocc"></div>
         </div>
-        <div id="right">
-            <div class="card">
-                <p class="no">1</p>
-                <p class="name">Srthk#346</p>
-                <p class="no2">1</p>
-            </div>
+      </div>
+      <div id="right">
+        <div class="card">
+          <p class="no">1</p>
+          <p class="name">Srthk#346</p>
+          <p class="no2">1</p>
         </div>
+      </div>
     </div>
     <div id="game-wrapper">
-        <div id="top">
-            <span id="room1">ROOM : </span>
-            <span id="name1">Name : srthk#437</span>
-            <button id="leave1">Leave Room</button>
-        </div>
-        <div id="wrapper1">
-            <div id="board">
-            </div>
+      <div id="top">
+        <span id="room1">ROOM : </span>
+        <span id="name1">Name : srthk#437</span>
+        <button id="leave1">Leave Room</button>
+      </div>
+      <div id="wrapper1">
+        <div id="board"></div>
 
-            <div id="players">
-                <div id="playerShow">
-                    
-                </div>
-                <div id="butt">
-                    <p id="info"></p>
-                    <button id="move">Play Move</button>
-                    <button id="object">Object!</button>
-                    <select name="You Claim" id="claim">
-                        <option value = "" selected>Choose your Card</option>
-                        <option value = "A">A</option>
-                        <option value = "2">2</option>
-                        <option value = "3">3</option>
-                        <option value = "4">4</option>
-                        <option value = "5">5</option>
-                        <option value = "6">6</option>
-                        <option value = "7">7</option>
-                        <option value = "8">8</option>
-                        <option value = "9">9</option>
-                        <option value = "10">10</option>
-                        <option value = "J">J</option>
-                        <option value = "Q">Q</option>
-                        <option value = "K">K</option>
-                    </select>
-                </div>
-            </div>
+        <div id="players">
+          <div id="playerShow"></div>
+          <div id="butt">
+            <p id="info"></p>
+            <button id="move">Play Move</button>
+            <button id="object">Object!</button>
+            <select name="You Claim" id="claim">
+              <option value="" selected>Choose your Card</option>
+              <option value="A">A</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="J">J</option>
+              <option value="Q">Q</option>
+              <option value="K">K</option>
+            </select>
+          </div>
         </div>
+      </div>
     </div>
-    <div id = "winner-wrapper">
-        <div id="winner">
-            <image src="image-removebg-preview (1).png" id="crown"></image>
-            <div id="winnerName">Saarthak#345</div>
-        </div>
-        <div id="winner-list">
-            Winner List
-            <ul id = "ul">
-                <li><span class="pos">1</span>Saarthak#345</li>
-                <li><span class="pos">2</span>Divyansh#346</li>
-            </ul>
-            <button id="Rematch">Rematch</button>
-            <button id="leave2">Leave</button>
-        </div>
+    <div id="winner-wrapper">
+      <div id="winner">
+        <image src="image-removebg-preview (1).png" id="crown"></image>
+        <div id="winnerName">Saarthak#345</div>
+      </div>
+      <div id="winner-list">
+        Winner List
+        <ul id="ul">
+          <li><span class="pos">1</span>Saarthak#345</li>
+          <li><span class="pos">2</span>Divyansh#346</li>
+        </ul>
+        <button id="Rematch">Rematch</button>
+        <button id="leave2">Leave</button>
+      </div>
     </div>
-</body>
-<script src="index.js"></script>
+    <dialog id="msg">
+      <p class="type">Error</p>
+      <p class="msgCon"></p>
+    </dialog>
+    <dialog id="obj-dialog">
+      <p class="type">Object</p>
+      <p class="msgCon"></p>
+      <div id="msgb">
+        <button id="obj">Object</button>
+        <button id="okay">Close</button>
+      </div>
+    </dialog>
+    <dialog id="error">
+        <p class="type">Error</p>
+        <p class="msgCon"></p>
+    </dialog>
+  </body>
+  <script src="index.js"></script>
 </html>

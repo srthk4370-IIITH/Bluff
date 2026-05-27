@@ -13,9 +13,22 @@ const object = document.getElementById("object")
 const claim = document.getElementById("claim")
 const info = document.getElementById("info")
 const leave1 = document.getElementById("leave1")
+const leave2 = document.getElementById("leave2")
+const type = document.getElementsByClassName("type")
+const msgCon = document.getElementsByClassName("msgCon")
+const msgggg = document.getElementById("msg")
+const objdialog = document.getElementById("obj-dialog")
+const noc = document.getElementById("noc")
+const nocc = document.getElementById("nocc")
+const rematch = document.getElementById("Rematch")
+const err = document.getElementById("error")
+const okay = document.getElementById("okay")
 let ws;
 let cards = [];
 let canMove = false;
+let newR = false;
+let msgEmpty = false;
+let ask = true;
 claim.disabled = true;
 let sel = []
 if(roomid == null || uid == null || name == null)
@@ -30,23 +43,6 @@ async function connect()
 {
     ws = new WebSocket("ws://localhost:8000/ws/"+roomid+"/"+uid+"/"+name)
     ws.onopen = () => {
-        /*document.body.innerText = roomid
-        let b = document.createElement("button")
-        document.body.append(b)
-        b.innerText = "Play"
-        b.addEventListener("click", () => {
-            console.log("Here")
-            ws.send(JSON.stringify({"action" : "play"}))
-        })
-        b1 = document.createElement("button")
-        document.body.append(b1)
-        b1.innerText = "move"
-        b1.addEventListener("click", () => {
-            ws.send(JSON.stringify({"action" : "move", "cards": cards, "claim": [2,2]}))
-            cards = []
-            b1.disabled = true
-        })
-        b1.disabled = true*/
         room.innerText = "Room ID : "+roomid;
         nameP.innerText = "Name : "+ name + "#" + uid;
         document.getElementById("wrapper").style.display = "flex";
@@ -79,9 +75,6 @@ async function connect()
                     p2.innerText = i-1
                     card.append(p2)
                     right.append(card)
-
-
-
                     // For Play:
                     pcard = document.createElement("div")
                     pcard.classList.add("pcard")
@@ -99,14 +92,35 @@ async function connect()
                     pShow.append(pcard)
                 });
                 start.disabled = !(msg.master == uid)
+                if(msg.master == uid)
+                {
+                    noc.style.display = "block"
+                }
             }
             else if(msg.action == "Not-Join")
             {
+                ask = false
                 window.location.href = "/"
             }
             else if(msg.action == "moved")
             {
-                console.log(msg);
+                if(msg.uid != uid)
+                {
+                    if(msg.empty)
+                    {
+                        type[0].innerText = "Look Who Just Played"
+                        msgCon[0].innerText = `${msg.name} wants to skip this turn. Lmao.`
+                        msgggg.style.visibility = "visible";
+                        msgEmpty = true
+                    }
+                    else
+                    {
+                        type[1].innerText = "Look Who Just Played"
+                        msgCon[1].innerText = `${msg.name} claims to have ${msg.claim[0]} of ${msg.claim[1]}... looks fishy, no?`
+                        objdialog.style.visibility = "visible";
+                        setTimeout(() => {objdialog.style.visibility = "hidden";}, 2500)
+                    }
+                }
             }
             else if(msg.action == "takeCards")
             {
@@ -131,43 +145,94 @@ async function connect()
             else if(msg.action == "nextTurn")
             {
                 info.innerText = `CURRENT PLAYER : ${msg.name}`
+                console.log(msg.uid)
+                console.log(uid)
+                console.log(msg.uid == uid)
                 if(msg.uid == uid)
                 {
                     canMove = true
                     move.disabled = false
                     if(msg.nextRound)
                     {
+                        newR = true;
                         claim.disabled = false;
-                        claim.selected = claim.options[0]
+                        claim.selectedIndex = 0;
+                        let  t = 0
+                        if(msgEmpty)
+                        {
+                            t =1000
+                            msgEmpty = false
+                        }
+                        setTimeout(() => {
+                        type[0].innerText = "Next Round is here"
+                        msgCon[0].innerText = "Its your turn.... Ready to deceive? It's a new round beware."
+                        }, t);
+                        msgggg.style.visibility = "visible"
+                        setTimeout(() => {msgggg.style.visibility = "hidden"}, 2000+t)
                     }
                     else
                     {
                         claim.value = msg.card
+                        let  t = 0
+                        if(msgEmpty)
+                        {
+                            t = 1000;
+                            msgEmpty = false;
+                        }
+                        setTimeout(() => {
+                            type[0].innerText = "Next Turn is here"
+                            msgCon[0].innerText = "Its your turn.... Ready to deceive?"
+                        }, t);
+                        msgggg.style.visibility = "visible"
+                        setTimeout(() => {msgggg.style.visibility = "hidden"}, 2000+t)
                     }
+                }
+                else
+                {
+                    t = 0;
+                    if(msgEmpty)
+                    {
+                        t = 1000;
+                        msgEmpty = false;
+                    }
+                    setTimeout(() => {
+                        type[0].innerText = msg.nextRound?"Next Round":"New Turn"
+                        msgCon[0].innerText = `It's ${msg.name}'s turn. Keep your eyes open.`
+                    }, t);
+                    msgggg.style.visibility = "visible"
+                    setTimeout(() => {msgggg.style.visibility = "hidden"}, 3000+t)
                 }
             }
             else if(msg.action == "object?")
             {
                 object.disabled = false;
-                setTimeout(() => {object.disabled = true;}, 3000)
+                setTimeout(() => {object.disabled = true;}, 4000)
             }
             else if(msg.action == "Object")
             {
-                info.innerText = msg.detail
+                type[0].innerText = "Judgement"
+                msgCon[0].innerText = msg.detail
+                msgggg.style.visibility = "visible"
             }
             else if(msg.action == "winner") //TODO: Display Winner As They Come
             {
-                if(msg.name == name)
+                if(msg.uid == uid)
                 {
-                    console.log("FUCK OFFF")
+                    msgEmpty = true;
+                    type[0].innerText = `${msg.name} Won!`
+                    msgCon[0].innerText = `Yeah, ${msg.name} won, LOSERRRRRR.`
                 }
                 else
                 {
-                    console.log("LOSER LMAOO")
+                    msgEmpty = true;
+                    type[0].innerText = `YOU Won!`
+                    msgCon[0].innerText = `YLessgoo atleast you didn't come last as I expected`
                 }
+                msgggg.style.visibility = "visible"
             }
             else if(msg.action == "done") //Display All the winners
             {
+                msgggg.style.visibility = "hidden"
                 document.getElementById("winner-wrapper").style.display = "flex";
                 document.getElementById("game-wrapper").style.display = "none";
                 document.getElementById("winnerName").innerText = msg.winners[0];
@@ -186,21 +251,25 @@ async function connect()
             }
             else
             {
-                console.log(msg)
+                type[2].innerText = "ERROR"
+                msgCon[2].innerText = msg.detail
+                err.style.visibility = "visible"
+                setTimeout(() => {err.style.visibility = "hidden"}, 3000)
             }
         }
         catch
         {
-            
+            console.error("Error")
         }
     }
 }
 
 start.addEventListener("click", () => {
-    ws.send(JSON.stringify({"action": "play", "uid": uid}))
+    ws.send(JSON.stringify({"action": "play", "uid": uid, "no": nocc.value == "" ? 0 : nocc.value}))
 })
 
 Leave.addEventListener("click", () => {
+    ask = false;
     sessionStorage.removeItem("roomid")
     sessionStorage.removeItem("name")
     window.location = "/";
@@ -226,7 +295,7 @@ document.addEventListener("click", (e) => {
 })
 
 move.addEventListener("click", () => {
-    if(canMove && claim.value != "")
+    if(canMove && claim.value != "" && !(newR && sel.length == 0))
     {
         sel1 = []
         sel.forEach(card => {
@@ -240,23 +309,49 @@ move.addEventListener("click", () => {
         canMove = false
         claim.selected = claim.options[0]
         claim.disabled = true
+        newR = false
     }
 })
 
 object.addEventListener("click", () => {
     ws.send(JSON.stringify({"action": "object"}))
+    object.disabled = true;
+})
+
+document.getElementById("obj").addEventListener("click", () => {
+    ws.send(JSON.stringify({"action": "object"}))
+    object.disabled = true;
 })
 
 leave1.addEventListener("click", () => {
+    ask = false;
     sessionStorage.removeItem("roomid")
     sessionStorage.removeItem("name")
-    window.location("/")
+    window.location = ("/")
+})
+
+leave2.addEventListener("click", () => {
+    ask= false;
+    sessionStorage.removeItem("roomid")
+    sessionStorage.removeItem("name")
+    window.location = ("/")
+})
+
+rematch.addEventListener("click", () => {
+    window.location.reload();
+})
+
+okay.addEventListener("click", () => {
+    objdialog.style.visibility = "hidden"
 })
 
 connect()
 
-/*window.addEventListener("beforeunload", (e) => {
-    e.preventDefault();
+window.addEventListener("beforeunload", (e) => {
+    if(ask)
+    {
+        e.preventDefault();
+    }
     sessionStorage.removeItem("roomid")
     sessionStorage.removeItem("name")
-})*/
+})

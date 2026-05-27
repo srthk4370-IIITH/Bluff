@@ -71,6 +71,26 @@ button
     border: none;
 }
 
+input
+{
+    width: 10%;
+    padding: 5px;
+    background-color: black;
+    border-radius: 10px;
+    border: 1px solid white;
+    color: white;
+    margin: 2px;
+}
+
+#noc
+{
+    width: 70%;
+    font-size: 20px;
+    margin: 10px;
+    font-family: "Changa One";
+    display: none;
+}
+
 #Leave:hover
 {
     background-color: black;
@@ -474,6 +494,85 @@ li:hover
     border: 1px solid rgb(52, 51, 51);
 }
 
+
+#msg, #obj-dialog
+{
+    position: absolute;
+    z-index: 9999;
+    width: max(30vw, 30vh);
+    height: min(30vw, 30vh);
+    background-color: rgb(208, 208, 208);
+    color: rgb(0, 0, 0);
+    top: 50%;
+    left: 0;
+    display: block;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ffffff;
+    border-radius: 30px;
+}
+
+#error
+{
+     position: absolute;
+    z-index: 9999;
+    width: max(30vw, 30vh);
+    height: min(30vw, 30vh);
+    background-color: rgb(208, 208, 208);
+    color: rgb(0, 0, 0);
+    bottom: 0;
+    right: 0;
+    margin: 10px;
+    display: block;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ffffff;
+    border-radius: 30px;
+}
+
+.type
+{
+    text-align: center;
+    font-family: "Changa One";
+    font-size: clamp(12px, min(5vw, 5vh), 60px);
+    padding-bottom: 5px;
+    width: 100%;
+    border-bottom: 1px solid white;
+}
+
+.msgCon
+{
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: clamp(10px, min(3vw, 3vh), 40px);
+    padding: 10px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+#msgb
+{
+    display: flex;
+}
+
+#obj:hover, #okay:hover
+{
+    background-color: rgb(191, 189, 189);
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+#msg, #obj-dialog, #error
+{
+    visibility: hidden;
+}
 
 #wrapper
 {
