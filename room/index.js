@@ -366,4 +366,8 @@ window.addEventListener("beforeunload", (e) => {
         sessionStorage.removeItem("roomid")
         sessionStorage.removeItem("name")
     }
+    else
+    {
+        reload = true;
+    }
 })
