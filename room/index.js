@@ -41,7 +41,7 @@ object.disabled = true
 
 async function connect()
 {
-    ws = new WebSocket("ws://localhost:8000/ws/"+roomid+"/"+uid+"/"+name)
+    ws = new WebSocket("wss://bluff-d6tg.onrender.com/ws/"+roomid+"/"+uid+"/"+name)
     ws.onopen = () => {
         room.innerText = "Room ID : "+roomid;
         nameP.innerText = "Name : "+ name + "#" + uid;
@@ -118,7 +118,7 @@ async function connect()
                         type[1].innerText = "Look Who Just Played"
                         msgCon[1].innerText = `${msg.name} claims to have ${msg.claim[0]} of ${msg.claim[1]}... looks fishy, no?`
                         objdialog.style.visibility = "visible";
-                        setTimeout(() => {objdialog.style.visibility = "hidden";}, 3500)
+                        setTimeout(() => {objdialog.style.visibility = "hidden";}, 5000)
                     }
                 }
             }
@@ -206,7 +206,7 @@ async function connect()
             else if(msg.action == "object?")
             {
                 object.disabled = false;
-                setTimeout(() => {object.disabled = true;}, 4000)
+                setTimeout(() => {object.disabled = true;}, 5000)
             }
             else if(msg.action == "Object")
             {
