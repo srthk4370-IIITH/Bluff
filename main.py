@@ -96,7 +96,7 @@ class GameRoom:
             else:
                 await self.append(self.currP, self.currentStack)
                 await rm.broadcast(self.roomid, {"action": "Object", "judge": "Won", "detail": f"{self.players.get(self.currP).name} lost the judgement. New Round begins"})
-            await self.nextRound(3)
+            await asyncio.create_task(self.nextRound(3))
         else:
             await rm.sendMsg(self.roomid, uid, {"action": "error", "detail": "Not In Game"})
 
