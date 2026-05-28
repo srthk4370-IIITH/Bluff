@@ -357,7 +357,7 @@ okay.addEventListener("click", () => {
 connect()
 
 window.addEventListener("beforeunload", (e) => {
-    if(ask)
+    if(ask && reload)
     {
         e.preventDefault();
     }
